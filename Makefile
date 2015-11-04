@@ -1,12 +1,19 @@
-KERNEL_VERSION	:= $(shell uname -r)
-KERNEL_MODULES	:= /lib/modules/$(KERNEL_VERSION)/build
+#!/usr/bin/make -f
 
-hid-y := hid-core.o hid-input.o hid-debug.o hidraw.o
+PKG_NAME=hid-apple-4.2-dkms
+PKG_VERSION=1.0.0
+PKG_DESCRIPTION="Backported Apple human interface device module from kernel 4.2 including new MacBook hardware support."
 
-obj-m += hid-apple.o hid.o
+MAINTAINER="Naftuli Tzvi Kay <rfkrocktk@gmail.com>"
 
 all:
-	$(MAKE) -C $(KERNEL_MODULES) M=$(PWD) modules
+	test -d build || mkdir build
+	fpm -f -s dir -t deb -n $(PKG_NAME) -v $(PKG_VERSION) -a all -p build/ \
+		-d dkms -d build-essential -d linux-headers-generic-lts-vivid \
+		-m $(MAINTAINER) --description $(PKG_DESCRIPTION) \
+		--deb-changelog CHANGELOG \
+		--post-install scripts/post-install.sh --pre-uninstall scripts/pre-uninstall.sh \
+		--exclude '.git*' usr/
 
 clean:
-	$(MAKE) -C $(KERNEL_MODULES) M=$(PWD) clean
+	rm -f build/$(PKG_NAME)_$(PKG_VERSION)_all.deb
