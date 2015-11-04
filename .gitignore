@@ -5,6 +5,7 @@
 *.mod.c
 *.mod.o
 
+build
 .tmp_versions
 modules.order
 Module.symvers
